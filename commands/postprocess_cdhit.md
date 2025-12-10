@@ -1,4 +1,4 @@
-0. CD-HIT was run on all genes across MAGs, to create sequence clusters
+## 0. CD-HIT was run on all genes across MAGs, to create sequence clusters
 
 This was done by first concatenating all gene sequence FASTAs:
 cd /mfs/gdouglas/projects/ATRAPP/cdhit_working
@@ -36,7 +36,7 @@ conda deactivate
 We then **post-processed the clusters to identify reciprocal best-hits of genes across genomes**, using the following steps. Note that several of these scripts are very minor modifications of the same ones
 we used for the same workflow for this manuscript: https://github.com/gavinmdouglas/ocean_cooccur_hgt (under GPL 3 license).
 
-1. Get FASTAs of all clusters with more than 1 sequence.
+## 1. Get FASTAs of all clusters with more than 1 sequence.
 ```
 cd /mfs/gdouglas/projects/ATRAPP/cdhit_postprocess
 
@@ -50,7 +50,7 @@ gzip /mfs/gdouglas/projects/ATRAPP/cdhit_working/*
 ```
 
 
-2. Align with MAFFT.
+## 2. Align with MAFFT.
 
 Run MAFFT with GNU parallel. Generated commands use a quick Python script.
 ```
@@ -71,7 +71,7 @@ And then afterwards ran this command to make sure that all commands finished:
 python ~/local/parallel_joblog_summary/joblog_summary.py --cmds mafft_cmds.sh --log mafft_cmds.log
 ```
 
-3. Get mapping of gene IDs to genomes and scaffolds.
+## 3. Get mapping of gene IDs to genomes and scaffolds.
 
 Also capture whether it is a CDS or other element type (tRNA), element length, and scaffold lengths.
 
@@ -86,7 +86,7 @@ gzip gene_info.tsv
 Genes on scaffolds < 5000 bp will be included in the analysis, but not retained for the final set of best hits, since we are concerned they are more likely to be contaminants.
 
 
-4. Get reciprocal best hits, on passing scaffolds, and between different genera and above.
+## 4. Get reciprocal best hits, on passing scaffolds, and between different genera and above.
 
 This will be with the `/mfs/gdouglas/scripts/ocean_cooccur_hgt/scripts/clustered_HGT/putative_hgt_per_cluster.py` script.
 
