@@ -4,6 +4,9 @@ import argparse
 import os
 import sys
 
+# Code originally distributed with other manuscript code previously:
+# https://github.com/gavinmdouglas/ocean_cooccur_hgt
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from functions import write_fasta, read_fasta
@@ -68,6 +71,10 @@ Parse CD-HIT output file of cluster definitions, and original input FASTA. Outpu
     # And for final cluster if it has at least two sequences.
     if len(cluster_seqs) > 1:
         write_fasta(cluster_seqs, os.path.join(args.outdir, cluster_id + '.fa'))
+
+    # Confirm that all sequences were accounted for.
+    if len(pass_ids) != len(seqs) or pass_ids != set(list(seqs.keys())):
+        sys.exit('Not all sequences were accounted for. Please check your input files.')
 
 
 if __name__ == '__main__':

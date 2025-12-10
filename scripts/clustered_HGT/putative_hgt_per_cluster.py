@@ -6,6 +6,7 @@ import sys
 import gzip
 from collections import defaultdict
 import hammingdist
+from pprint import pprint
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -16,7 +17,7 @@ def main():
         description='''
 Parse aligned FASTAs of sequences from the same cluster.
 Identify reciprocal best-hits above 95% (that are at least between genomes of different genera or above).
-Also, consider all hits initially, but only output reciprocal best hits that are on passing scaffolds.
+Also, consider all hits initially, but only output reciprocal best hits that are on scaffolds >= 5000 bp.
 ''',
 
 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -35,30 +36,19 @@ formatter_class=argparse.RawDescriptionHelpFormatter)
                         metavar="TAXTAB", type=str,
                         help="Path to (gzipped) table with taxonomic information per genome.",
                         required=False,
-                        default='/mfs/gdouglas/projects/ocean_mags/mapfiles/MAG_taxa_breakdown.tsv.gz')
-
-    parser.add_argument('-p', '--passing',
-                        metavar="PASS", type=str,
-                        help="Path to file with passing scaffolds.",
-                        required=False,
-                        default='/mfs/gdouglas/projects/ocean_mags/Sunagawa_dataset/scaffolds_5000bp.txt')
+                        default='/mfs/gdouglas/projects/ATRAPP/genome_process/ATRAPP_MAG_GTDBtk_taxonomy.tsv.gz')
 
     parser.add_argument('-g', '--geneinfo',
                         metavar="GENEINFO", type=str,
                         help="Path to (gzipped) table with gene information per genome.",
                         required=False,
-                        default='/mfs/gdouglas/projects/ocean_mags/Sunagawa_dataset/gene_info_allscaffolds.tsv.gz')
+                        default='/mfs/gdouglas/projects/ATRAPP/genome_process/gene_info.tsv.gz')
 
     args = parser.parse_args()
 
-    passing_scaffolds = set()
-    with open(args.passing, 'r') as pass_fh:
-        for line in pass_fh:
-            passing_scaffolds.add(line.strip())
-
     # Read in genome taxonomy.
     tax = defaultdict(dict)
-    tax_levels = ["Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species", "Strain"]
+    tax_levels = ["Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species", "MAG"]
     tax_col_to_i = {}
     with gzip.open(args.tax, "rb") as tax_fh:
         tax_header = tax_fh.readline().decode("utf-8").strip().split("\t")
@@ -74,15 +64,22 @@ formatter_class=argparse.RawDescriptionHelpFormatter)
     gene_to_genome = dict()
     gene_to_scaffold = dict()
     gene_tab_col = {}
+    passing_scaffolds = set()
     with gzip.open(args.geneinfo, "rb") as gene_fh:
+        # gene_id gene_type       gene_length     genome_id       scaffold_id     scaffold_length
         gene_header = gene_fh.readline().decode("utf-8").strip().split("\t")
         for i, col in enumerate(gene_header):
             gene_tab_col[col] = i
 
         for gene_line in gene_fh:
             gene_line = gene_line.decode("utf-8").strip().split("\t")
-            gene_to_genome[gene_line[gene_tab_col['gene']]] = gene_line[gene_tab_col['genome']]
-            gene_to_scaffold[gene_line[gene_tab_col['gene']]] = gene_line[gene_tab_col['scaffold']]
+
+            gene_to_genome[gene_line[gene_tab_col['gene_id']]] = gene_line[gene_tab_col['genome_id']]
+            gene_to_scaffold[gene_line[gene_tab_col['gene_id']]] = gene_line[gene_tab_col['scaffold_id']]
+
+            scaffold_length = int(gene_line[gene_tab_col['scaffold_length']])
+            if scaffold_length >= 5000:
+                passing_scaffolds.add(gene_line[gene_tab_col['scaffold_id']])
 
     with open(args.output, 'w') as out_fh:
 
@@ -160,6 +157,7 @@ formatter_class=argparse.RawDescriptionHelpFormatter)
                         parsed_seqs.add(seq_id)
 
                         if seq_id not in gene_to_scaffold or best_match not in gene_to_scaffold:
+                            sys.stderr.write("Warning: Gene " + seq_id + " or " + best_match + " not found in gene_to_scaffold mapping.\n")
                             continue
 
                         gene1_scaffold = gene_to_scaffold[seq_id]
@@ -181,9 +179,7 @@ formatter_class=argparse.RawDescriptionHelpFormatter)
                         if not diff_found:
                             sys.exit("Error: No taxonomic difference found between genomes " + gene1_genome + " and " + gene2_genome + ".")
 
-                        genome_order = sorted([])
-
-                        if highest_tax_diff in  ['Species', 'Strain']:
+                        if highest_tax_diff in ['Species', 'MAG']:
                             continue
                         
                         print("\t".join([seq_id, best_match, gene1_genome, gene2_genome, highest_tax_diff, str(top_identities[seq_id])]), file=out_fh)
