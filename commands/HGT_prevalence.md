@@ -14,7 +14,7 @@ python /mfs/gdouglas/scripts/ATRAPP_scripts/scripts/clustered_HGT/map_filt_multi
 gzip /mfs/gdouglas/projects/ATRAPP/cdhit_postprocess/gene_to_cluster_multi_filt.tsv
 ```
 
-1. Get number of higher-order taxa that encode each cluster
+2. Get number of higher-order taxa that encode each cluster
 
 Broken down by the total number of genera, families, etc., as well as the numbers of cases where higher order taxa have at least two genomes with the cluster (to give a sense of more widely spread clusters).
 
@@ -29,7 +29,7 @@ python /mfs/gdouglas/scripts/ATRAPP_scripts/scripts/prevalence_HGT/compute_taxon
 gzip cluster_taxon_prevalence.tsv
 ```
 
-1. Get number of filtered clusters shared between pairwise genomes.
+3. Get number of filtered clusters shared between pairwise genomes.
 
 The motivation for this data type is that it could be used to make a quick network. I also included the phylum level of each genome, to make it easier to see which are Cyanobacteria vs. others.
 
