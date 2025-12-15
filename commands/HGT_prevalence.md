@@ -42,3 +42,22 @@ python /mfs/gdouglas/scripts/ATRAPP_scripts/scripts/prevalence_HGT/compute_pairw
 gzip pairwise_genomes_clusters_shared.tsv
 ```
 
+## 4. Get number of genes involved in HGT (and other info) per genome
+
+```
+python /mfs/gdouglas/scripts/ATRAPP_scripts/scripts/prevalence_HGT/compute_HGT_info_per_genome.py \
+	-i /mfs/gdouglas/projects/ATRAPP/cdhit_postprocess/gene_to_cluster_multi_filt.tsv.gz \
+	-p /mfs/gdouglas/projects/ATRAPP/HGT_prevalence/cluster_taxon_prevalence.tsv.gz \
+	-b /mfs/gdouglas/projects/ATRAPP/cdhit_postprocess/all_best_hits.tsv.gz \
+	-o /mfs/gdouglas/projects/ATRAPP/HGT_prevalence/genome_HGT_info.tsv
+
+gzip /mfs/gdouglas/projects/ATRAPP/HGT_prevalence/genome_HGT_info.tsv
+```
+
+## 5. Get proportion of genomes per sample with broadly shared clusters
+
+Specifically, the proportion of genomes per sample with at least one gene called as putative HGT, as well as clusters broadly shared in general (even if the individual gene instance was not called as putative HGT).
+
+```
+Rscript /mfs/gdouglas/scripts/ATRAPP_scripts/scripts/prevalence_HGT/compute_HGT_genome_prev_by_sample.R
+```
